@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\taske\\OneDrive\\Desktop\\ООП\\HomeworkKOOp\\HomeworkKOOp.csproj": {}
+    "C:\\Users\\meandr\\RiderProjects\\HomeworkKOOp\\HomeworkKOOp.csproj": {}
   },
   "projects": {
-    "C:\\Users\\taske\\OneDrive\\Desktop\\ООП\\HomeworkKOOp\\HomeworkKOOp.csproj": {
+    "C:\\Users\\meandr\\RiderProjects\\HomeworkKOOp\\HomeworkKOOp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\taske\\OneDrive\\Desktop\\ООП\\HomeworkKOOp\\HomeworkKOOp.csproj",
+        "projectUniqueName": "C:\\Users\\meandr\\RiderProjects\\HomeworkKOOp\\HomeworkKOOp.csproj",
         "projectName": "HomeworkKOOp",
-        "projectPath": "C:\\Users\\taske\\OneDrive\\Desktop\\ООП\\HomeworkKOOp\\HomeworkKOOp.csproj",
-        "packagesPath": "C:\\Users\\taske\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\taske\\OneDrive\\Desktop\\ООП\\HomeworkKOOp\\obj\\",
+        "projectPath": "C:\\Users\\meandr\\RiderProjects\\HomeworkKOOp\\HomeworkKOOp.csproj",
+        "packagesPath": "C:\\Users\\meandr\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\meandr\\RiderProjects\\HomeworkKOOp\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\taske\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\meandr\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -24,7 +24,6 @@
         },
         "frameworks": {
           "net10.0": {
-            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {}
           }
@@ -39,11 +38,10 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.300"
+        "SdkAnalysisLevel": "10.0.400"
       },
       "frameworks": {
         "net10.0": {
-          "framework": "net10.0",
           "targetAlias": "net10.0",
           "imports": [
             "net461",
@@ -61,7 +59,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.401/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
