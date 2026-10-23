@@ -1,4 +1,4 @@
-class User
+public class User
 {
     // ид
     public int Id { get; set; }

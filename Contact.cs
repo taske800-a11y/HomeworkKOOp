@@ -1,4 +1,4 @@
-class Contact
+public class Contact
 {
     //ID
     public int Id { get; set; }
