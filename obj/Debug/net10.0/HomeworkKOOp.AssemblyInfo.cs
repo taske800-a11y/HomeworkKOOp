@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HomeworkKOOp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c9d2786987ac497eb8ace36a6972f823c96ce1ae")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+50f321767fe7a8b0039348d3a46ac58a64012030")]
 [assembly: System.Reflection.AssemblyProductAttribute("HomeworkKOOp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HomeworkKOOp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
