@@ -1,53 +1,60 @@
+using System.Globalization;
+
 namespace Marketplace.Domain;
 
 public sealed class Product
 {
-    private readonly int _id;
-    private string _name;
-    private decimal _unitPrice;
+    // Закрытые поля: состояние товара нельзя изменить напрямую извне.
+    private readonly int id;
+    private readonly string title;
+    private int price;
 
-    public int Id => _id;
-    public string Name => _name;
-    public decimal UnitPrice => _unitPrice;
-
-    public Product(int id, string name, decimal unitPrice)
+    public Product(int id, string title, int price)
     {
         ValidateId(id);
-        ValidateName(name);
-        ValidatePrice(unitPrice);
-        _id = id;
-        _name = name.Trim();
-        _unitPrice = unitPrice;
+        ValidateTitle(title);
+        ValidatePrice(price);
+
+        this.id = id;
+        this.title = title.Trim();
+        this.price = price;
     }
 
-    public void Rename(string name)
+    public int GetId() => id;
+
+    public string GetTitle() => title;
+
+    public int GetPrice() => price;
+
+    public void SetPrice(int newPrice)
     {
-        ValidateName(name);
-        _name = name.Trim();
+        ValidatePrice(newPrice);
+        price = newPrice;
     }
 
-    public void ChangePrice(decimal unitPrice)
+    public string GetInfo()
     {
-        ValidatePrice(unitPrice);
-        _unitPrice = unitPrice;
+        return $"{id}. {title} — {price.ToString("N0", CultureInfo.GetCultureInfo("ru-RU"))} у.е.";
     }
 
-    public override string ToString() => $"{Name} — {UnitPrice:N2} УЕ";
-
-    private static void ValidateId(int id)
+    private static void ValidateId(int value)
     {
-        if (id <= 0) throw new ArgumentOutOfRangeException(nameof(id));
+        if (value <= 0)
+            throw new ArgumentOutOfRangeException(
+                nameof(value), "ID товара должен быть положительным.");
     }
 
-    private static void ValidateName(string name)
+    private static void ValidateTitle(string value)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Название товара не может быть пустым.", nameof(name));
+        if (string.IsNullOrWhiteSpace(value))
+            throw new ArgumentException(
+                "Название товара не может быть пустым.", nameof(value));
     }
 
-    private static void ValidatePrice(decimal unitPrice)
+    private static void ValidatePrice(int value)
     {
-        if (unitPrice < 0m)
-            throw new ArgumentOutOfRangeException(nameof(unitPrice));
+        if (value < 0)
+            throw new ArgumentOutOfRangeException(
+                nameof(value), "Цена не может быть отрицательной.");
     }
 }

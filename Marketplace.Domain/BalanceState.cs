@@ -21,5 +21,5 @@ public readonly record struct BalanceState
         BonusShare = bonusShare;
     }
 
-    public override string ToString() => $"Деньги: {Money:N2} УЕ; бонусы: {Bonuses:N2}; доля бонусов: {BonusShare:P0}";
+    public override string ToString() => $"Деньги: {Money:N2} у.е.; бонусы: {Bonuses:N2}; доля бонусов: {BonusShare:P0}";
 }

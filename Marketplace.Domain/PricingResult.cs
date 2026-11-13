@@ -23,6 +23,6 @@ public readonly record struct PricingResult
 
     public decimal GetFinalPrice() => FinalPrice;
     public decimal GetDiscountAmount() => DiscountAmount;
-    public void ShowFinalPrice() => Console.WriteLine($"Итоговая цена: {FinalPrice:N2} УЕ");
-    public void ShowDiscountAmount() => Console.WriteLine($"Размер скидки: {DiscountAmount:N2} УЕ");
+    public void ShowFinalPrice() => Console.WriteLine($"Итоговая цена: {FinalPrice:N2} у.е.");
+    public void ShowDiscountAmount() => Console.WriteLine($"Размер скидки: {DiscountAmount:N2} у.е.");
 }

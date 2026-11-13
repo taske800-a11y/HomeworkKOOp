@@ -1,95 +1,230 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using Marketplace.Domain;
-using Marketplace.Services;
+using Marketplace.DataAccess;
+using Marketplace.Presentation;
 
-Console.OutputEncoding = System.Text.Encoding.UTF8;
+namespace Marketplace;
 
-Console.WriteLine("=== ООП. Домашнее задание №2: интернет-магазин ===");
-var user = new User(1, "Лохмаев Алексей Сергеевич", "aleksei");
-
-// Шаги 1–4 сценария: пополнение, начисление бонусов и настройка условий.
-decimal topUp = 10_000m;
-decimal giftedBonuses = topUp * 0.10m;
-var balance = new BalanceState(topUp, giftedBonuses, 0.10m);
-var profile = new UserProfile(user, balance, 0.95m);
-
-Console.WriteLine($"Покупатель: {profile.User.FullName}");
-Console.WriteLine($"После пополнения и начисления бонусов: {profile.Balance}");
-Console.WriteLine("Персональная скидка: 5%; разрешённая доля оплаты бонусами: 10%.");
-
-// Демонстрация ссылочного типа: две переменные ссылаются на один профиль.
-UserProfile sameProfile = profile;
-sameProfile.UpdateBalance(profile.Balance with { BonusShare = 0.10m });
-Console.WriteLine($"Ссылки на один профиль: {ReferenceEquals(profile, sameProfile)}");
-
-// Демонстрация копирования значимого типа: исходный баланс не меняется.
-BalanceState balanceCopy = profile.Balance;
-BalanceState changedCopy = balanceCopy with { Money = balanceCopy.Money - 100m };
-Console.WriteLine($"Копия структуры после with: {changedCopy}");
-Console.WriteLine($"Исходная структура не изменилась: {profile.Balance}");
-
-// Каталог товаров.
-var plate = new Product(1, "Тарелка", 1_000m);
-var cutlery = new Product(2, "Приборы", 2_000m);
-
-// Заказ №1: 3 тарелки и 2 комплекта приборов.
-var firstCart = new Cart(1, user.Id);
-firstCart.AddItem(plate, 3);
-firstCart.AddItem(cutlery, 2);
-ProcessOrder("ЗАКАЗ №1", profile, firstCart);
-
-// Заказ №2: повторная покупка для демонстрации неуспешной оплаты и повторной попытки.
-var secondCart = new Cart(2, user.Id);
-secondCart.AddItem(plate, 3);
-secondCart.AddItem(cutlery, 2);
-ProcessOrder("ЗАКАЗ №2 — ПЕРВАЯ ПОПЫТКА", profile, secondCart);
-
-Console.WriteLine("\nПополнение денежного баланса на 2 300 УЕ...");
-profile.UpdateBalance(profile.Balance with { Money = profile.Balance.Money + 2_300m });
-Console.WriteLine($"Баланс после пополнения: {profile.Balance}");
-ProcessOrder("ЗАКАЗ №2 — ПОВТОРНАЯ ПОПЫТКА", profile, secondCart);
-
-Console.WriteLine("\n=== ИТОГ ===");
-Console.WriteLine($"Денежный баланс: {profile.Balance.Money:N2} УЕ");
-Console.WriteLine($"Баланс бонусов: {profile.Balance.Bonuses:N2}");
-Console.WriteLine($"Количество купленных товарных позиций: {profile.Purchases.Count}");
-foreach (CartItem item in profile.Purchases)
-    Console.WriteLine($"  {item}");
-
-var (deconstructedUser, purchasesCount) = profile;
-Console.WriteLine($"Deconstruct профиля: {deconstructedUser.Login}, покупок-позиций: {purchasesCount}");
-
-static void ProcessOrder(string title, UserProfile profile, Cart cart)
+internal class Program
 {
-    Console.WriteLine($"\n--- {title} ---");
-    Console.WriteLine($"Позиций в корзине (единиц товара): {cart.ItemCount}");
-    foreach (CartItem item in cart.Items)
-        Console.WriteLine($"  {item}");
-
-    PricingResult price = cart.CalculatePrice(profile.PersonalDiscount);
-    Console.WriteLine($"Исходная цена: {price.OriginalPrice:N2} УЕ");
-    price.ShowDiscountAmount();
-    price.ShowFinalPrice();
-
-    BalanceState before = profile.Balance;
-    bool paid = OrderService.TryPay(before, price, out BalanceState after,
-        out decimal bonusPart, out decimal moneyPart, out string message);
-
-    Console.WriteLine(message);
-    if (!paid)
+    private static void Main()
     {
-        Console.WriteLine($"Списания не выполнены. Баланс сохранён: {profile.Balance}");
-        Console.WriteLine($"Корзина сохранена, товарных единиц: {cart.ItemCount}");
-        return;
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        Console.InputEncoding = System.Text.Encoding.UTF8;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("ru-RU");
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("ru-RU");
+
+        Console.WriteLine("==================================================");
+        Console.WriteLine("       MARKETPLACE — ДЕМОНСТРАЦИЯ РАБОТЫ");
+        Console.WriteLine("==================================================");
+
+        // 1. Создание каталога и четырёх корректных товаров.
+        PrintSection("1. СОЗДАНИЕ ТОВАРОВ");
+
+        Catalog catalog = new();
+        Product keyboard = new(1, "Механическая клавиатура", 4990);
+        Product mouse = new(2, "Игровая мышь", 2490);
+        Product headphones = new(3, "Наушники", 6990);
+        Product monitorStand = new(4, "Подставка для монитора", 3190);
+
+        catalog.Add(keyboard);
+        catalog.Add(mouse);
+        catalog.Add(headphones);
+        catalog.Add(monitorStand);
+
+        Console.WriteLine($"Успешно добавлено товаров: {catalog.GetCount()}");
+
+        // 2. Валидация конструктора и SetPrice.
+        PrintSection("2. ПРОВЕРКА ВАЛИДАЦИИ");
+
+        RunValidationCheck("Создание товара с отрицательным ID",
+            () => _ = new Product(-1, "Тестовый товар", 100));
+
+        RunValidationCheck("Создание товара с пустым названием",
+            () => _ = new Product(5, "   ", 100));
+
+        RunValidationCheck("Создание товара с отрицательной ценой",
+            () => _ = new Product(6, "Тестовый товар", -100));
+
+        int originalPrice = mouse.GetPrice();
+        RunValidationCheck("Установка отрицательной цены через SetPrice(-100)",
+            () => mouse.SetPrice(-100));
+
+        Console.WriteLine(
+            $"Цена после отклонённого изменения: {mouse.GetPrice():N0} у.е. " +
+            $"(до проверки: {originalPrice:N0} у.е.)");
+
+        RunValidationCheck("Добавление товара с повторяющимся названием",
+            () => catalog.Add(new Product(5, "  ИГРОВАЯ МЫШЬ  ", 1500)));
+
+        RunValidationCheck("Добавление null в каталог",
+            () => catalog.Add(null!));
+
+        // 3. Поиск и удаление: успешные и отрицательные сценарии.
+        PrintSection("3. ПОИСК И УДАЛЕНИЕ ТОВАРОВ");
+
+        Product? foundProduct = catalog.Find("   ИГРОВАЯ МЫШЬ   ");
+        Console.WriteLine(foundProduct is not null
+            ? $"Найден товар: {foundProduct.GetInfo()}"
+            : "Товар не найден.");
+
+        Product? missingProduct = catalog.Find("Несуществующий товар");
+        Console.WriteLine(missingProduct is null
+            ? "Ожидаемый результат: Find вернул null для отсутствующего товара."
+            : "ОШИБКА: найден товар, которого нет в каталоге.");
+
+        bool removed = catalog.Remove("Механическая клавиатура");
+        Console.WriteLine(removed
+            ? "Товар «Механическая клавиатура» успешно удалён."
+            : "Не удалось удалить товар.");
+
+        bool removedMissing = catalog.Remove("Несуществующий товар");
+        Console.WriteLine(
+            $"Remove для отсутствующего товара вернул: {removedMissing} (ожидается false).");
+
+        // Возвращаем товар, чтобы сохранить четыре позиции для дальнейшей демонстрации.
+        catalog.Add(keyboard);
+        Console.WriteLine($"Товаров в каталоге: {catalog.GetCount()}");
+
+        // 4. Демонстрация связи старой корзины с новым каталогом.
+        PrintSection("4. ИНТЕГРАЦИЯ КАТАЛОГА С КОРЗИНОЙ");
+
+        Cart cart = new(1, 1);
+        Product? cartProduct = catalog.Find("Наушники");
+
+        if (cartProduct is not null)
+        {
+            cart.AddItem(cartProduct, 2);
+            PricingResult cartPrice = cart.CalculatePrice(0.95m);
+
+            Console.WriteLine(
+                $"В корзину из каталога добавлено: {cartProduct.GetTitle()}, " +
+                $"количество: {cart.ItemCount}.");
+
+            Console.WriteLine(
+                $"Стоимость двух товаров с множителем скидки 0,95: " +
+                $"{cartPrice.FinalPrice.ToString("N2", CultureInfo.CurrentCulture)} у.е.");
+
+            Console.WriteLine(
+                $"Позиции снимка покупки: {cart.CreatePurchaseSnapshot().Count}");
+        }
+
+        // 5. Защита коллекции. Вызов Clear() намеренно не выполняется:
+        // он не компилируется для IReadOnlyList<Product>.
+        PrintSection("5. ЗАЩИТА ВНУТРЕННЕЙ КОЛЛЕКЦИИ");
+
+        IReadOnlyList<Product> productsSnapshot = catalog.GetProducts();
+        Console.WriteLine(
+            $"Получено товаров через GetProducts(): {productsSnapshot.Count}");
+        Console.WriteLine(
+            "GetProducts() возвращает IReadOnlyList<Product> — " +
+            "метода Clear() в этом контракте нет.");
+        Console.WriteLine(
+            $"Количество товаров в исходном каталоге: {catalog.GetCount()}");
+
+        // 6. Сохранение и загрузка через интерфейс (DIP).
+        PrintSection("6. СОХРАНЕНИЕ И ЗАГРУЗКА ДАННЫХ");
+
+        string filePath = Path.Combine(
+            AppContext.BaseDirectory, "Data", "products.csv");
+
+        // Клиентский код зависит от IProductRepository, а не от реализации.
+        IProductRepository repository = new FileProductRepository(filePath);
+        repository.Save(catalog.GetProducts());
+
+        Console.WriteLine("Каталог успешно сохранён.");
+        Console.WriteLine($"Путь к файлу: {filePath}");
+
+        List<Product> loadedProducts = repository.Load();
+        Console.WriteLine($"Загружено товаров из файла: {loadedProducts.Count}");
+
+        Catalog loadedCatalog = new();
+        foreach (Product product in loadedProducts)
+            loadedCatalog.Add(product);
+
+        Console.WriteLine(
+            $"Товаров в восстановленном каталоге: {loadedCatalog.GetCount()}");
+
+        // 7. Печать и аналитика отделены от доменных сущностей (SRP).
+        PrintSection("7. ВЫВОД ТОВАРОВ");
+
+        CatalogPrinter printer = new();
+        Console.WriteLine("Полный список товаров:");
+        printer.PrintAll(loadedCatalog.GetProducts());
+
+        Console.WriteLine();
+        printer.PrintTop(loadedCatalog.GetProducts(), 2);
+
+        PrintSection("8. АНАЛИТИЧЕСКИЙ ОТЧЁТ");
+
+        CatalogReport report = new();
+        double averagePrice = report.GetAveragePrice(loadedCatalog.GetProducts());
+
+        Console.WriteLine(
+            $"Средняя цена товаров: {averagePrice.ToString("N2", CultureInfo.CurrentCulture)} у.е.");
+        Console.WriteLine();
+        Console.WriteLine(report.GetSummary(loadedCatalog.GetProducts()));
+
+        PrintSection("9. ПРОВЕРКА ПРОФИЛЯ И СКИДКИ");
+
+        CustomerProfile customer = new()
+        {
+            FullName = "Анна Петрова",
+            Email = "anna@example.com",
+            Phone = "+7 (900) 123-45-67",
+            Rating = 5
+        };
+        Console.WriteLine(customer.GetInfo(includeRating: true));
+        Console.WriteLine(customer.GetContactInfo(includePhone: true));
+
+        Discount discount = new()
+        {
+            Name = "Весенняя скидка",
+            ValidUntil = DateTime.Now.AddDays(7),
+            Percent = 10,
+            MinSum = 5000
+        };
+        Console.WriteLine($"Цена заказа 6000 после скидки: {discount.Calculate(6000)} у.е.");
+        RunValidationCheck("Установка Percent = 101 через свойство",
+            () => discount.Percent = 101);
+        RunValidationCheck("Установка MinSum = -1 через свойство",
+            () => discount.MinSum = -1);
+
+        PrintSection("ДЕМОНСТРАЦИЯ ЗАВЕРШЕНА");
+        Console.WriteLine("Проверены:");
+        Console.WriteLine(" - валидация Product и SetPrice;");
+        Console.WriteLine(" - запрет null и дубликатов в Catalog;");
+        Console.WriteLine(" - успешный и неуспешный поиск/удаление;");
+        Console.WriteLine(" - интеграция Catalog и Cart;");
+        Console.WriteLine(" - защита коллекции каталога;");
+        Console.WriteLine(" - сохранение и загрузка через IProductRepository;");
+        Console.WriteLine(" - раздельные вывод и расчёты.");
+        Console.WriteLine(" - профиль клиента и проверка свойств Discount.");
+        Console.WriteLine("==================================================");
     }
 
-    Console.WriteLine($"Оплата бонусами: {bonusPart:N2}; деньгами: {moneyPart:N2} УЕ.");
-    profile.UpdateBalance(after);
-    profile.AddPurchases(cart.CreatePurchaseSnapshot());
-    cart.Clear();
-    Console.WriteLine($"Новый баланс: {profile.Balance}");
-    Console.WriteLine($"Корзина очищена. Товарных единиц: {cart.ItemCount}; итоговая цена: {cart.CalculatePrice(profile.PersonalDiscount).FinalPrice:N2} УЕ.");
+    private static void RunValidationCheck(string description, Action action)
+    {
+        try
+        {
+            action();
+            Console.WriteLine($"[НЕ ПРОЙДЕНО] {description}");
+        }
+        catch (ArgumentException exception)
+        {
+            Console.WriteLine($"[УСПЕХ] {description}");
+            Console.WriteLine($"          Причина: {exception.Message}");
+        }
+    }
 
-    // with создаёт новое значение структуры; старое значение before осталось доступным.
-    BalanceState demonstratedWith = after with { BonusShare = after.BonusShare };
-    Console.WriteLine($"Демонстрация with после оплаты: {demonstratedWith}");
+    private static void PrintSection(string title)
+    {
+        Console.WriteLine();
+        Console.WriteLine("--------------------------------------------------");
+        Console.WriteLine(title);
+        Console.WriteLine("--------------------------------------------------");
+    }
 }

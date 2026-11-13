@@ -16,7 +16,7 @@ public static class OrderService
         if (balance.Money < moneyPart)
         {
             newBalance = balance;
-            message = $"Недостаточно средств. Нужно денег: {moneyPart:N2} УЕ, доступно: {balance.Money:N2} УЕ.";
+            message = $"Недостаточно средств. Нужно денег: {moneyPart:N2} у.е., доступно: {balance.Money:N2} у.е.";
             return false;
         }
 

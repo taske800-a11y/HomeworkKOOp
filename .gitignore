@@ -1,52 +1,5 @@
-# Build output
-[Bb]in/
-[Oo]bj/
-[Dd]ebug/
-[Rr]elease/
-x64/
-x86/
-[Aa]rtifacts/
-
-# IDE
+bin/
+obj/
 .vs/
-.idea/
 *.user
 *.suo
-*.sln.iml
-*.iml
-_ReSharper*/
-*.[Rr]e[Ss]harper
-
-# .NET and NuGet
-project.lock.json
-project.fragment.lock.json
-artifacts/
-TestResults/
-coverage/
-coverage.*
-*.nupkg
-*.snupkg
-.nuget/
-
-# Logs and temporary files
-*.log
-*.tmp
-*.temp
-*.bak
-*.swp
-*~
-
-# Publish output
-publish/
-
-# Local environment and secrets
-.env
-.env.*
-!.env.example
-secrets.json
-appsettings.Local.json
-
-# OS files
-.DS_Store
-Thumbs.db
-Desktop.ini
