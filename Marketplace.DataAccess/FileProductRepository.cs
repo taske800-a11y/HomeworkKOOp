@@ -75,9 +75,9 @@ internal sealed class FileProductRepository : IProductRepository
         ArgumentNullException.ThrowIfNull(product);
 
         string encodedTitle = Convert.ToBase64String(
-            Encoding.UTF8.GetBytes(product.GetTitle()));
+            Encoding.UTF8.GetBytes(product.Title));
 
-        return $"{product.GetId()};{product.GetPrice()};{encodedTitle}";
+        return $"{product.Id};{product.Price};{encodedTitle}";
     }
 
     private static Product Deserialize(string line)
@@ -108,6 +108,6 @@ internal sealed class FileProductRepository : IProductRepository
         string title = new UTF8Encoding(false, true).GetString(
             Convert.FromBase64String(parts[2]));
 
-        return new Product(id, title, price);
+        return new Product { Id = id, Title = title, Article = $"FILE-{id}", Price = price };
     }
 }

@@ -13,7 +13,7 @@
     <Compile Remove="Индивидуальные/**/*.cs" />
     <Compile Remove="Индивидуальные/**/obj/**/*.cs" />
     <Compile Remove="Индивидуальные/**/bin/**/*.cs" />
-    <Compile Include="Индивидуальные\Задания1и2\Program.cs" />
-    <Compile Include="Индивидуальные\Задания1и2\StudentProgress.cs" />
+    <Compile Include="Индивидуальные\Program.cs" />
+    <Compile Include="Индивидуальные\Student.cs" />
   </ItemGroup>
 </Project>

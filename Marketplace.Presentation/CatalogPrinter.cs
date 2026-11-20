@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Marketplace.Domain;
+using Marketplace.Services;
 
 namespace Marketplace.Presentation;
 
@@ -34,8 +35,8 @@ public class CatalogPrinter
         Console.WriteLine("Самые дорогие товары:");
 
         foreach (Product product in catalog
-                     .OrderByDescending(product => product.GetPrice())
-                     .ThenBy(product => product.GetId())
+                     .OrderByDescending(product => product.Price)
+                     .ThenBy(product => product.Id)
                      .Take(count))
         {
             Console.WriteLine(PrepareLine(product));
@@ -44,14 +45,8 @@ public class CatalogPrinter
 
     private string PrepareLine(Product product)
     {
-        return $"{product.GetId()}. {product.GetTitle()} — " +
-               PriceFormatter.Format(product.GetPrice());
+        return $"{product.Id}. {product.Title} — " +
+               PriceFormatter.Format(product.Price);
     }
 }
 
-// Модификатор file ограничивает вспомогательный форматтер этим файлом.
-file static class PriceFormatter
-{
-    public static string Format(int price) =>
-        price.ToString("N0", CultureInfo.GetCultureInfo("ru-RU")) + " у.е.";
-}

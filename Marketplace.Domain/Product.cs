@@ -1,60 +1,54 @@
-using System.Globalization;
+using System;
+using System.Collections.Generic;
 
 namespace Marketplace.Domain;
 
 public sealed class Product
 {
-    // Закрытые поля: состояние товара нельзя изменить напрямую извне.
-    private readonly int id;
-    private readonly string title;
-    private int price;
+    private static readonly HashSet<string> AllowedStatuses = new(StringComparer.Ordinal)
+    { "В наличии", "Нет в наличии", "Под заказ" };
+    private string _title = string.Empty;
+    private string _article = string.Empty;
+    private int _price;
 
-    public Product(int id, string title, int price)
+    public required int Id { get; init; }
+    public required string Title
     {
-        ValidateId(id);
-        ValidateTitle(title);
-        ValidatePrice(price);
-
-        this.id = id;
-        this.title = title.Trim();
-        this.price = price;
+        get => _title;
+        init
+        {
+            if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Название товара обязательно.", nameof(value));
+            _title = value.Trim();
+        }
     }
-
-    public int GetId() => id;
-
-    public string GetTitle() => title;
-
-    public int GetPrice() => price;
-
-    public void SetPrice(int newPrice)
+    public required string Article
     {
-        ValidatePrice(newPrice);
-        price = newPrice;
+        get => _article;
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Артикул обязателен.", nameof(value));
+            _article = value.Trim();
+        }
     }
-
-    public string GetInfo()
+    public int Price
     {
-        return $"{id}. {title} — {price.ToString("N0", CultureInfo.GetCultureInfo("ru-RU"))} у.е.";
+        get => _price;
+        set { if (value < 0) throw new ArgumentOutOfRangeException(nameof(value), "Цена не может быть отрицательной."); _price = value; }
     }
-
-    private static void ValidateId(int value)
+    public bool IsBudget => Price < 25;
+    public string Status { get; private set; } = "В наличии";
+    public Product() { }
+    public int GetId() => Id;
+    public string GetTitle() => Title;
+    public int GetPrice() => Price;
+    public void SetPrice(int price) => Price = price;
+    public string GetInfo() => GetInfo(true);
+    public string GetInfo(bool includeIntProperty)
     {
-        if (value <= 0)
-            throw new ArgumentOutOfRangeException(
-                nameof(value), "ID товара должен быть положительным.");
+        string info = $"Товар: {Title}, артикул: {Article}, статус: {Status}";
+        return includeIntProperty ? $"{info}, цена: {Price}" : info;
     }
-
-    private static void ValidateTitle(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException(
-                "Название товара не может быть пустым.", nameof(value));
-    }
-
-    private static void ValidatePrice(int value)
-    {
-        if (value < 0)
-            throw new ArgumentOutOfRangeException(
-                nameof(value), "Цена не может быть отрицательной.");
-    }
+    public void ChangeStatus(string newStatus) { EnsureStatus(newStatus); Status = newStatus.Trim(); }
+    private static void EnsureStatus(string value)
+    { if (string.IsNullOrWhiteSpace(value) || !AllowedStatuses.Contains(value.Trim())) throw new ArgumentException("Недопустимый статус товара.", nameof(value)); }
 }

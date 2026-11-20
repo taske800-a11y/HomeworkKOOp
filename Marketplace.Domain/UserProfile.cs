@@ -25,7 +25,7 @@ public sealed class UserProfile
     public void AddPurchases(IEnumerable<CartItem> items)
     {
         ArgumentNullException.ThrowIfNull(items);
-        _purchases.AddRange(items.Select(item => new CartItem(item.Id, item.ProductId, item.Quantity)));
+        _purchases.AddRange(items.Select(item => item));
     }
 
     public void Deconstruct(out User user, out int purchasesCount)

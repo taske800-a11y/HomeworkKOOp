@@ -14,7 +14,7 @@ public sealed class Catalog
         ArgumentNullException.ThrowIfNull(product);
 
         if (_products.Any(existing =>
-                SameTitle(existing.GetTitle(), product.GetTitle())))
+                SameTitle(existing.Title, product.Title)))
         {
             throw new ArgumentException(
                 "Товар с таким названием уже есть в каталоге.",
@@ -29,7 +29,7 @@ public sealed class Catalog
         string normalizedTitle = Normalize(title);
 
         int index = _products.FindIndex(product =>
-            SameTitle(product.GetTitle(), normalizedTitle));
+            SameTitle(product.Title, normalizedTitle));
 
         if (index < 0)
             return false;
@@ -43,7 +43,7 @@ public sealed class Catalog
         string normalizedTitle = Normalize(title);
 
         return _products.Find(product =>
-            SameTitle(product.GetTitle(), normalizedTitle));
+            SameTitle(product.Title, normalizedTitle));
     }
 
     public IReadOnlyList<Product> GetProducts()

@@ -18,7 +18,7 @@ public sealed class CatalogReport
         if (list.Count == 0)
             return 0.0;
 
-        return list.Average(product => product.GetPrice());
+        return list.Average(product => product.Price);
     }
 
     public string GetSummary(IEnumerable<Product> products)
@@ -28,15 +28,15 @@ public sealed class CatalogReport
         if (list.Count == 0)
             return "Каталог пуст.";
 
-        Product cheapest = list.MinBy(product => product.GetPrice())!;
-        Product mostExpensive = list.MaxBy(product => product.GetPrice())!;
+        Product cheapest = list.MinBy(product => product.Price)!;
+        Product mostExpensive = list.MaxBy(product => product.Price)!;
         double average = GetAveragePrice(list);
-        long total = list.Sum(product => (long)product.GetPrice());
+        long total = list.Sum(product => (long)product.Price);
 
         return $"Товаров: {list.Count}; " +
                $"средняя цена: {average.ToString("N2", PriceCulture)} у.е.; " +
-               $"самый дешёвый: {cheapest.GetTitle()} ({FormatPrice(cheapest.GetPrice())}); " +
-               $"самый дорогой: {mostExpensive.GetTitle()} ({FormatPrice(mostExpensive.GetPrice())}); " +
+               $"самый дешёвый: {cheapest.Title} ({FormatPrice(cheapest.Price)}); " +
+               $"самый дорогой: {mostExpensive.Title} ({FormatPrice(mostExpensive.Price)}); " +
                $"общая стоимость: {FormatPrice(total)}.";
     }
 

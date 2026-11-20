@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+
 namespace Marketplace.Domain;
 
 public class CustomerProfile
@@ -5,16 +8,18 @@ public class CustomerProfile
     private string _email = string.Empty;
     private int _rating;
 
-    public required string FullName { get; init; }
+    private string _fullName = string.Empty;
+    public required string FullName { get => _fullName; init { if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("ФИО обязательно.", nameof(value)); _fullName = value.Trim(); } }
+
     public string Phone { get; set; } = string.Empty;
 
-    public string Email
+    public required string Email
     {
         get => _email;
         set
         {
             EnsureValidEmail(value);
-            _email = value;
+            _email = value.Trim();
         }
     }
 
@@ -24,7 +29,8 @@ public class CustomerProfile
         set
         {
             if (value is < 0 or > 5)
-                throw new ArgumentOutOfRangeException(nameof(value), "Рейтинг должен быть от 0 до 5.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(value), "Рейтинг должен быть от 0 до 5.");
 
             _rating = value;
         }
@@ -32,7 +38,7 @@ public class CustomerProfile
 
     public bool IsTrusted => Rating >= 4;
 
-    public string GetInfo() => GetInfo(includeRating: false);
+    public string GetInfo() => GetInfo(includeRating: true);
 
     public string GetInfo(bool includeRating)
     {
@@ -50,8 +56,11 @@ public class CustomerProfile
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        if (!value.Contains('@'))
-            throw new ArgumentException("Email должен содержать символ @.", nameof(value));
+        string email = value.Trim();
+        int atIndex = email.IndexOf('@');
+
+        if (atIndex <= 0 || atIndex != email.LastIndexOf('@') || atIndex == email.Length - 1)
+            throw new ArgumentException("Email должен содержать корректный символ @.", nameof(value));
     }
 
     private static string NormalizePhone(string value)
